@@ -1,128 +1,265 @@
-# 🎓 面向学生的机器学习与深度学习知识问答 RAG 系统
+# 🎓 MLTutor - 机器学习 / 深度学习 个性化学习与 RAG 智能助教
 
-## 1 项目规划与需求分析
-
-1. **项目目标**
-
-   构建一个基于 RAG 技术的问答系统，面向机器学习与深度学习学习者，  
-   帮助学生理解算法概念、原理与应用，解决学习过程中的知识疑问。
-
-2. **核心功能**
-   - 自动爬取与整合公开的 ML/DL 教程与文档（如 Wikipedia、scikit-learn Docs、PyTorch、TensorFlow）
-   - 将知识文本向量化并构建知识库
-   - 支持学生以自然语言提问并检索最相关知识片段
-   - 将检索内容与问题结合，生成清晰易懂的答案
-   - 支持多轮对话与学习历史记录
-   - 支持“学习模式”与“测验模式”切换（扩展功能）
-
-3. **技术架构与工具**
-   - 框架：LangChain 
-   - 向量模型：OpenAI Embeddings / M3E / bge-small
-   - 向量数据库：Chroma
-   - 大语言模型：Llama3
-   - 前后端框架：Gradio / Streamlit
-   - 部署环境：FastAPI + Docker（可选）
+> 集成「检索增强问答 (RAG) + 智能出题测验 + 自动学习反馈」的一体化学习助手。支持 PDF 教材上传、异步构建专属知识库、混合检索、结构化题目生成与学习报告导出。
 
 ---
 
-## 2 数据准备与向量知识库构建
+## 📋 项目简介
 
-数据流：  
-**公开资料 → 文本提取 → 清洗与切分 → 向量化 → 索引建立 → 查询匹配**
+MLTutor 面向希望系统学习 ML/DL 的自学者与教学辅助场景。它通过双知识库架构与混合检索策略，在同一个 Streamlit 界面中提供：
 
-1. **数据收集**
-   - 来源包括 Wikipedia、scikit-learn、TensorFlow、PyTorch 官方文档、公开课程笔记（如吴恩达公开课）
-   - 数据格式为 HTML / MD / TXT，通过 Python 爬虫或 API 自动获取
-   - 每个文档附带元数据（来源、主题、关键概念标签）
-
-2. **数据清洗与切片**
-   - 删除无效符号、HTML标签
-   - 按语义或段落进行切片（约 400~600 tokens）
-   - 每个切片对应一条知识单元
-
-3. **向量化与知识库存储**
-   - 使用 Embedding 模型（如 `text-embedding-3-large`）对文本进行向量化
-   - 存入 Chroma 数据库，建立索引
-   - 检索时：学生问题也会向量化，与知识库计算语义相似度（余弦相似）
+| 模块 | 功能 | 说明 |
+|------|------|------|
+| 上传与构建 | 异步处理 PDF | 后台线程解析 → 分块 → 向量化 → 专属会话向量库 |
+| RAG 问答 | 语义检索 + BM25 混合 | 查询扩展 + 上下文评分 + Few-shot + 多轮记忆 |
+| 测验系统 | 选择题 + 判断题自动生成 | LLM 生成结构化 JSON，聚类采样保证主题覆盖 |
+| 评测与报告 | 自动判分与可视化 | 题型准确率 / 错题分类 / 个性化 AI 学习反馈 |
+| 知识反馈 | 用户点赞/点踩 | 保存简略反馈 JSON 供后续质量迭代 |
 
 ---
 
-## 3 大模型集成与 API 连接
+## ✨ 核心特性（真实代码支持）
 
-1. 集成 GPT 或 Qwen 等大模型，实现生成式问答功能  
-2. 系统调用大模型 API，将检索到的上下文与学生提问一起作为 Prompt 输入  
-3. 支持 Prompt 模板，如：
-   ```
-   你是一位机器学习课程助教，请用清晰易懂的语言，
-   结合以下资料回答学生的问题，并举例说明。
-   ```
-
----
-
-## 4 核心功能实现
-
-1. **RAG管线**
-   - 问题语义向量化 → 检索相似文档 → 合并上下文 → 调用LLM生成答案
-2. **Prompt Engineering**
-   - 根据问题类型（定义类 / 比较类 / 应用类）选择不同的回答模板
-3. **多轮对话**
-   - 保留上下文对话历史，实现连续学习体验
-4. **历史记录管理**
-   - 学生可查看学习问题记录与答案
-5. **学习模式扩展**
-   - “测验模式”：由系统反向生成选择题或填空题，帮助学生复习
+1. � 双检索架构：上传 PDF 后同时生成「出题专用库」与「问答混合库（默认教材 + 上传内容）」
+2. 🧠 混合检索策略：Chroma 向量检索 + BM25 关键词检索加权融合，去重+评分选取上下文
+3. � 查询增强：自动生成同义 / 解释 / 领域前缀拓展查询，提高召回率
+4. 🧩 智能分块：多规则清洗、公式/定理标注、跨块语义合并、超长截断与质量分析
+5. �️ 会话隔离：每次上传构建独立 `session_<id>` 向量库，不污染基础教材库
+6. 📝 题目高质量约束：严格 JSON 格式 + 质量校验（长度/唯一答案/干扰项/自洽性）+ 多次重试
+7. � 主题覆盖采样：支持 KMeans 聚类分层抽样，避免集中某单一章节
+8. 🤖 学习反馈生成：错题上下文 → LLM 产出结构化 Markdown 建议；失败回退保底逻辑
+9. � 导出能力：支持测验结果与学习报告 TXT / PDF (自动检测中文字体)
+10. 🧪 健壮降级：聚类失败自动回退随机采样；检索失败回退向量-only；反馈生成失败使用 fallback 模板
 
 ---
 
-## 5 功能优化与评估
+## 🏗️ 系统架构概览
 
-1. **质量验证**
-   - 设计问题集评估系统回答的准确度与可理解性
-2. **Bad Case 收集**
-   - 对错误或不清晰回答进行归档与分析
-3. **优化迭代**
-   - 改进 Prompt 模板与知识检索策略
-   - 调整向量切片粒度与过滤机制
-
----
-
-## 6 前端与用户交互界面开发
-
-1. **界面功能**
-   - 问答区：输入问题、查看回答  
-   - 知识来源展示区：显示参考资料来源与链接  
-   - 学习记录区：保存学生提问历史  
-   - 可扩展模块：测验、知识图谱可视化  
-2. **界面工具**
-   - Streamlit 用于快速原型展示  
-   - Gradio 提供简单聊天界面
-
----
-
-## 7 部署与测试
-
-1. 部署后端至云服务器或本地环境  
-2. 进行功能与性能测试，验证：
-   - 检索准确性
-   - 回答相关性与可读性
-   - 系统响应速度
-3. 上线后进行稳定性监控与日志记录
+```
+            ┌─────────────┐
+ 用户上传PDF →│ background  │→ 异步任务：解析 / 清洗 / 分块 / 向量化
+              │ processor   │
+              └─────┬──────┘
+                    │ session_db_path
+        ┌───────────▼───────────┐
+        │   core_indexing        │  会话向量库构建 / 过滤 / 截断
+        └───────┬───────────────┘
+                │ Chroma + Embeddings
+     ┌──────────▼──────────┐
+     │  EnsembleRetriever  │  (向量检索 + BM25 加权)
+     └─────┬─────────┬─────┘
+           │         │
+      RAG 问答    测验出题（聚类抽样）
+           │         │
+    Prompt 构建   题目生成(JSON)
+           │         │
+     LLM 响应      判分 / 报告 / AI反馈
+           │
+       用户交互 (Streamlit 多标签页)
+```
 
 ---
 
-## 8 系统维护与扩展
+## 📂 实际目录结构（当前仓库）
 
-1. **知识库维护**
-   - 定期更新资料源，添加新算法与新模型内容  
-2. **功能扩展**
-   - 增加图文解释与代码示例生成功能  
-   - 接入课程推荐模块（如推荐学习顺序）  
-3. **用户反馈**
-   - 收集学生反馈数据，用于系统优化与教学改进
+```
+rag_mlsys/
+├── main_app.py               # 主入口：上传 / 测验 / 报告 / AI助教 四合一界面
+├── module_rag_assistant.py   # 独立简化版 RAG 助教（可单独运行）
+├── background_processor.py   # 异步任务：处理上传 PDF 构建会话向量库
+├── core_processing.py        # PDF 批量 / 单文件处理 + 清洗 + 分块 + 质量分析
+├── core_indexing.py          # 向量库构建 / 会话隔离 / 批量模式 / 加载测试
+├── quiz_module/              # 测验子系统：出题 / 判分 / 报告 / 聚类
+│   ├── question_generator.py
+│   ├── evaluator.py
+│   ├── report_generator.py
+│   └── topic_clustering.py
+├── down.py                   # 模型下载脚本（bge embedding + Qwen 7B）
+├── knowledge_base/           # 放置基础教材 PDF（被忽略，只保留目录）
+├── vector_db/                # 持久化向量数据库（动态生成，忽略内容）
+├── processed_chunks/         # 分块缓存 (chunks.json / chunks.pkl)
+├── feedback_db/              # 用户反馈 JSON（忽略内容）
+├── task_status/              # 后台任务状态记录文件
+├── temp_uploads/             # 临时上传 PDF
+├── models/                   # 本地模型权重（需自行下载）
+├── requirements.txt
+└── README.md
+```
+
+> 提示：`.gitignore` 已配置忽略大模型 / PDF / 生成数据，仅保留结构。需要手动下载模型。
 
 ---
 
-## ✅ 项目总结
+## 🔧 核心模块详解
 
-> **MLTutor** 是一个面向学生的智能学习助手，通过 RAG 技术整合机器学习与深度学习的核心知识，  
-> 帮助学生高效获取知识、理解复杂概念，并在学习过程中提供可持续的知识支持。
+| 模块 | 关键函数 / 类 | 说明 |
+|------|---------------|------|
+| `core_processing.py` | `process_single_pdf`, `clean_document_content`, `split_text_into_chunks` | PDF 加载 → 内容清洗 → 智能分块（定理/公式标注 + 合并 + OCR 修复）|
+| `core_indexing.py` | `build_session_vector_db`, `initialize_embedding_model` | 过滤非正文 / 截断过长 / 分批构建 Chroma / 会话隔离 |
+| `background_processor.py` | `ProcessingTask`, `BackgroundProcessor` | 后台线程轮询 PENDING 任务，阶段进度写入 JSON |
+| `main_app.py` | `render_sidebar`, `retrieve_with_enhancements`, `build_enhanced_prompt` | 查询扩展 / 多轮对话抽取 / Few-shot 示例融合 |
+| `quiz_module/question_generator.py` | `_build_question_gen_prompt`, `_validate_question_quality` | 高质量题目 JSON 结构 + 失败重试 |
+| `quiz_module/topic_clustering.py` | `cluster_documents_simple`, `smart_document_sampling` | KMeans 聚类 + 分层抽样保证覆盖面 |
+| `quiz_module/evaluator.py` | `grade_quiz`, `calculate_score`, `get_performance_level` | 判分统计 / 错题分析 / 盲区抽取 |
+| `quiz_module/report_generator.py` | `generate_study_feedback`, `export_report_to_pdf` | 个性化 AI 学习反馈 + 中英文字体兼容 |
+
+---
+
+## 🚀 快速开始
+
+### 环境需求
+| 组件 | 推荐 |
+|------|------|
+| Python | 3.9+ (>=3.8 亦可) |
+| RAM | ≥8GB（处理大 PDF 更稳） |
+| GPU | 推荐 (Qwen 7B 推理更快；CPU 可用但较慢) |
+
+### 1. 克隆仓库
+```bash
+git clone https://github.com/yourusername/rag_mlsys.git
+cd rag_mlsys
+```
+
+### 2. 创建并激活虚拟环境
+```bash
+python -m venv venv
+source venv/bin/activate  # macOS/Linux
+# Windows: venv\Scripts\activate
+```
+
+### 3. 安装依赖
+```bash
+pip install -r requirements.txt
+```
+
+### 4. 下载模型（Embedding + LLM）
+```bash
+python down.py
+```
+> 若下载失败请检查网络或使用镜像。CPU 环境无法加载 bfloat16 时会自动使用 float32。
+
+### 5. 准备基础教材（可选）
+将 PDF 放入 `knowledge_base/`，可执行：
+```bash
+python core_processing.py     # 批量处理并输出 chunks.json / chunks.pkl
+python core_indexing.py       # 构建/测试基础向量库（首次可跳过交互）
+```
+若只依赖上传即时构建，可跳过此步，直接在界面上传。
+
+### 6. 运行主应用（推荐 Streamlit 方式）
+```bash
+streamlit run main_app.py
+```
+或：
+```bash
+python main_app.py
+```
+
+### 7. 使用流程
+1. 打开标签页「上传教材」上传 PDF → 后台异步处理（可刷新查看进度）
+2. 处理完成后自动生成两个检索器（出题库 / 混合问答库）
+3. 在「开始测验」配置题量与难度 → LLM 生成题目 → 提交判分
+4. 「学习报告」查看统计图与 AI 个性化反馈 → 一键将建议问题发送到助教
+5. 「AI助教」进行多轮深度问答，查看引用来源与提交反馈
+
+---
+
+## 🧪 测验系统工作流细节
+1. 文档采样：优先聚类 + 分层抽样 → 覆盖不同主题
+2. Prompt 构建：强约束 + 禁止“根据上文”类引用，题面自洽
+3. LLM 生成：多次重试直至通过 JSON / 质量校验
+4. 判分统计：正确 / 错误 / 未答 + 题型正确率 + 难度估计
+5. 错题分析：关键词抽取 + 构造知识盲区摘要
+6. 学习反馈：错题上下文 → LLM 输出结构化建议（失败回退模板）
+7. 报告导出：支持 TXT / PDF（自动字体检测）
+
+---
+
+## � RAG 检索增强策略
+| 步骤 | 说明 |
+|------|------|
+| 查询扩展 | 自动补充“什么是 / 请解释 / 领域前缀”多版本查询 |
+| 文档合并 | 多查询结果去重 + 评分（关键词命中 / 长度 / 多样性）|
+| Few-shot | 加载内置示例（反向传播 / BatchNorm）增强回答风格 |
+| 多轮上下文 | 最近 N 轮对话压缩为 Q/A 片段融入 prompt |
+| 反馈存储 | 每条回答支持 👍👎，截断保存 answer 片段到 `feedback_db` |
+
+---
+
+## 🛡️ 健壮性与降级设计
+| 场景 | 降级策略 |
+|------|---------|
+| BM25 构建失败 | 仅使用向量检索 |
+| 聚类失败 / 文档少 | 回退随机采样或有放回采样 |
+| 学习反馈生成异常 | 使用 fallback 模板替代 |
+| 无检索结果 | 返回提示语 + 不生成误导性回答 |
+| GPU 不可用 | 自动切换到 CPU float32 |
+
+---
+
+## 📊 运行性能（建议）
+- Qwen2.5-7B-Instruct 建议 GPU (≥12GB 显存)；CPU 下首轮加载可能数分钟
+- Embedding 模型 bge-large-zh-v1.5 体积较小，可 CPU 加载
+- 上传大 PDF（>50MB）建议分卷；后台处理进度可视查看
+
+---
+
+## 🛣️ Roadmap（后续规划）
+- [ ] 知识图谱与概念关联可视化
+- [ ] FastAPI 服务化接口 / 多用户管理
+- [ ] 缓存热门查询与向量检索结果
+- [ ] 题目难度自适应（IRT / 知识追踪）
+- [ ] 英文/多语言支持
+- [ ] 更细粒度错题知识点抽取 (NLP + Tagging)
+
+---
+
+## 🤝 贡献指南
+欢迎 Issue / PR！
+1. Fork 仓库
+2. 新建分支：`git checkout -b feature/xxx`
+3. 提交代码：`git commit -m 'feat: xxx'`
+4. 推送：`git push origin feature/xxx`
+5. 发起 Pull Request（请附功能说明 / 截图）
+
+代码规范建议：
+- 保持中文注释 + 英文函数名一致性
+- 新增模块请补充 README 对应章节或添加内联文档
+- 如引入新依赖请更新 `requirements.txt`
+
+---
+
+## ❓ FAQ
+| 问题 | 解决方案 |
+|------|----------|
+| 加载模型很慢 | 首次下载 / 解压；可预先运行 `python down.py` 并使用国内镜像 |
+| GPU 显存不足 | 降级为 CPU；或使用更小模型（自行替换路径）|
+| 题目经常失败 | 提高 `max_retries`；减少难度为 `easy`；检查基础文档是否足够 |
+| 中文 PDF 乱码 | 确认使用 PyMuPDF 加载成功；尝试重新生成或转换编码 |
+| PDF 特殊公式未识别 | 手动预处理 PDF 或后续添加 LaTeX 解析增强 |
+| 向量库重复 | 每次上传会覆盖同一会话目录；如需持久保留可改写命名策略 |
+
+---
+
+## 📄 许可证
+MIT License — 可自由使用与二次开发（请保留原版权声明）。
+
+---
+
+## 🙏 致谢
+开源生态：LangChain · Chroma · HuggingFace · PyTorch · scikit-learn · ReportLab
+
+---
+
+## ⭐ Star 支持
+如果此项目对你有帮助，欢迎点亮 Star 给予支持与反馈！
+
+---
+
+## 🧩 下一步建议（供使用者）
+1. 试运行一个小型 PDF，验证全流程
+2. 在测验报告中把错题发送到助教进一步深挖
+3. 根据反馈 JSON 聚合统计（可后续新增脚本）
+4. 尝试替换其他中文 Embedding 模型（例如 m3e 或 bge-m3）
+
+祝学习进步！

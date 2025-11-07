@@ -41,31 +41,43 @@ Thumbs.db
 # ===================================================================
 
 # 1. Models (Large downloaded files)
-# This ignores the entire 'models' directory.
-models/
+# Ignore model files but keep the directory structure
+models/*.bin
+models/*.gguf
+models/*.safetensors
+models/*.pth
+models/*.pt
+models/*.h5
+models/*.onnx
 
 # 2. Vector Databases (Generated data)
-# This ignores the static DB and all 'session_' DBs.
-vector_db/
+# Ignore the database files but keep the directory
+vector_db/*.db
+vector_db/*.sqlite
+vector_db/*.index
+vector_db/session_*
 
 # 3. Processed Data (Generated artifacts)
-# This ignores the .pkl and .json files from core_processing.py
-processed_chunks/
+# Ignore processed files but keep the directory
+processed_chunks/*.pkl
+processed_chunks/*.json
 
 # 4. User Uploads (Volatile data)
-# This ignores any PDFs uploaded by users.
-temp_uploads/
+# Ignore uploaded PDFs
+temp_uploads/*.pdf
 
 # 5. Task/Job Status (Logs)
-# This ignores the JSON files from your background processor.
-task_status/
+# Ignore status files but keep the directory
+task_status/*.json
 
 # 6. Feedback Database (User-generated data)
-# This ignores all feedback files.
-feedback_db/
+# Ignore feedback files but keep the directory
+feedback_db/*.json
+feedback_db/*.db
 
 # 7. Source Data (Large binary files)
-# This ignores the PDFs in the knowledge base, but keeps the folder.
-# You can add a README.md inside 'knowledge_base/' to explain
-# where to get the files, and that file WILL be tracked.
+# Ignore PDFs in knowledge base but keep the directory
 knowledge_base/*.pdf
+
+# Keep directory structure with .gitkeep files
+!.gitkeep
