@@ -1,0 +1,71 @@
+# ===================================================================
+# Python Standard Ignores
+# ===================================================================
+# Compiled Python files and cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+*.venv
+
+# Distribution / build artifacts
+.eggs/
+*.egg-info/
+dist/
+build/
+
+# Environment variables (NEVER commit these)
+.env
+.env.*
+
+# ===================================================================
+# OS / IDE Specific Ignores
+# ===================================================================
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# PyCharm
+.idea/
+
+# ===================================================================
+# Project-Specific Ignores
+# ===================================================================
+
+# 1. Models (Large downloaded files)
+# This ignores the entire 'models' directory.
+models/
+
+# 2. Vector Databases (Generated data)
+# This ignores the static DB and all 'session_' DBs.
+vector_db/
+
+# 3. Processed Data (Generated artifacts)
+# This ignores the .pkl and .json files from core_processing.py
+processed_chunks/
+
+# 4. User Uploads (Volatile data)
+# This ignores any PDFs uploaded by users.
+temp_uploads/
+
+# 5. Task/Job Status (Logs)
+# This ignores the JSON files from your background processor.
+task_status/
+
+# 6. Feedback Database (User-generated data)
+# This ignores all feedback files.
+feedback_db/
+
+# 7. Source Data (Large binary files)
+# This ignores the PDFs in the knowledge base, but keeps the folder.
+# You can add a README.md inside 'knowledge_base/' to explain
+# where to get the files, and that file WILL be tracked.
+knowledge_base/*.pdf

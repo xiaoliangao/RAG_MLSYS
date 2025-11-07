@@ -1,0 +1,7 @@
+[server]
+# 1. 提高文件上传大小限制 (例如 1000MB)
+maxUploadSize = 1000
+
+# 2. 提高 WebSocket 消息大小限制 (这可能是关键)
+# 必须设置得比 maxUploadSize 稍大
+maxMessageSize = 1000
