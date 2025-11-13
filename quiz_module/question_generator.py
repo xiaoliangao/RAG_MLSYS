@@ -83,27 +83,30 @@ def _build_question_gen_prompt(context: str, q_type: str = "choice", difficulty:
 
 **关键原则：**
 
-1. **题目自洽性** ⭐
-   - 题目表述必须完整、独立，不依赖额外背景
-   - 学生无需阅读原始材料就能理解题目
-   - 绝不使用"根据上文"、"材料中提到"、"以下哪个"等引用性表述
+1. **题干完全自包含** ⭐
+   - 题干必须独立成篇，不引用“本书/教材/材料/上文/下列”等外部指示语
+   - 如果需要提到公式、定义或代码，请直接在题干中复述必要内容，而不是写“以下代码/如图所示”
+   - 禁止出现“根据上文”“文中提到”“本章”“如下代码”“如图”“本书”等措辞
 
 2. **知识聚焦** ⭐
    - 只考查学科核心知识（概念、原理、方法、应用）
-   - 严禁考查元信息（章节号、页码、作者、参考文献等）
-   - 题目应具有教学价值和实际意义
+   - 严禁考查元信息（章节号、页码、作者、排版、图表编号等）
+   - 与上下文无关的背景或假设不得出现
 
-3. **答案准确性** ⭐
-   - 正确答案必须在上下文中有明确依据
-   - 不编造或推测材料外的信息
-   - 如果材料信息不足，选择其他知识点
+3. **答案可追溯** ⭐
+   - 正确答案必须能在上下文中直接找到依据
+   - 不得臆造“代码片段”“图示”“实验数据”等上下文没有出现的内容
+   - 如上下文信息不足，请换一个信息充分的知识点
 
 4. **表达规范** ⭐
-   - 使用清晰、专业的学术语言
-   - 避免歧义、模糊或过于口语化的表述
-   - 数学公式和专业术语要准确
+   - 使用清晰、专业的学术语言，逻辑严谨
+   - 选项描述长度和语气保持一致，干扰项合理但明显错误
+   - 避免绝对化词语（如“永远”“完全”）除非上下文明确说明
 
 {quality_rules}
+
+**禁止词汇示例（题干与选项均不得出现）：**
+“本书”“本教材”“教材中”“本文”“上文”“材料”“以下代码”“下列代码”“如图”“见图”“本章内容”“上述内容”等任何指代上下文的表达。
 
 **输出格式要求：**
 - 必须返回严格的JSON格式
@@ -121,9 +124,10 @@ def _build_question_gen_prompt(context: str, q_type: str = "choice", difficulty:
 请基于上述材料，生成一道{difficulty_instructions[difficulty]}的{type_instruction}。
 
 **要求：**
-- 题目完全独立，不引用"材料"或"上文"
-- 考查学科知识，非元信息
-- 答案有明确依据
+- 题干自成一体，必要背景在题干中写明
+- 不引用“材料/上文/本书/以下代码”等指示语
+- 如需提及算法步骤、公式或代码，请在题干中直接描述关键信息
+- 考查真实知识点，答案有明确依据
 - 直接返回JSON，无额外内容"""
 
     return [
@@ -234,14 +238,25 @@ def _validate_question_quality(question: Dict[str, Any]) -> tuple[bool, str]:
     
     # 检查是否包含引用性词语（质量红线）
     forbidden_phrases = [
-        "根据上文", "根据材料", "根据上述", "材料中", "文中", 
-        "上面提到", "以下哪个", "该书", "本文", "作者认为"
+        "根据上文", "根据材料", "根据上述", "材料中", "文中",
+        "上面提到", "以下哪个", "该书", "本文", "作者认为",
+        "本书", "书中", "教材", "教材中", "本教材", "本章",
+        "如图", "下图", "上图", "图中", "见图", "下表", "上表", "表中",
+        "以下代码", "下列代码", "代码如下", "上述代码", "该代码", "这段代码",
+        "代码片段", "参考代码", "如上代码", "本段代码", "根据代码",
+        "如下所示", "上述内容", "本段内容"
     ]
     
-    question_text = question["question"].lower()
-    for phrase in forbidden_phrases:
-        if phrase in question_text:
-            return False, f"题目包含引用性表述: {phrase}"
+    def contains_forbidden(text: str) -> Optional[str]:
+        lowered = text.lower()
+        for phrase in forbidden_phrases:
+            if phrase in text or phrase in lowered:
+                return phrase
+        return None
+    
+    bad_phrase = contains_forbidden(question["question"])
+    if bad_phrase:
+        return False, f"题目包含引用性表述: {bad_phrase}"
     
     # 检查选项
     options = question["options"]
@@ -253,6 +268,11 @@ def _validate_question_quality(question: Dict[str, Any]) -> tuple[bool, str]:
         option_texts = [opt.split(". ", 1)[-1] if ". " in opt else opt for opt in options]
         if len(set(option_texts)) != len(option_texts):
             return False, "选项存在重复"
+        
+        for opt in options:
+            bad_phrase = contains_forbidden(opt)
+            if bad_phrase:
+                return False, f"选项包含引用性表述: {bad_phrase}"
         
         # 检查选项长度
         for opt in options:

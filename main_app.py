@@ -94,6 +94,394 @@ GENERATION_CONFIG = {
 }
 
 
+def inject_custom_css():
+    """注入全局样式，统一界面视觉风格"""
+    st.markdown(
+        """
+        <style>
+        :root {
+            --brand: #2563eb;
+            --brand-soft: #e0edff;
+            --hero-gradient: linear-gradient(120deg,#0ea5e9,#2563eb 65%);
+        }
+        .main, .stApp {
+            background: #f4f7fb;
+        }
+        .block-container {
+            padding-top: 1rem;
+            max-width: 1200px;
+        }
+        .hero-card {
+            background: var(--hero-gradient);
+            border-radius: 24px;
+            padding: 28px;
+            color: #fff;
+            display: flex;
+            gap: 32px;
+            align-items: stretch;
+            box-shadow: 0 20px 50px rgba(37, 99, 235, 0.25);
+            flex-wrap: wrap;
+        }
+        .hero-card h2 {
+            margin: 0.4rem 0 0.6rem;
+            font-size: 1.75rem;
+        }
+        .hero-card p {
+            margin: 0 0 1rem;
+            opacity: 0.9;
+        }
+        .hero-badge {
+            display: inline-flex;
+            padding: 4px 14px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255,255,255,0.4);
+            letter-spacing: 0.02em;
+        }
+        .hero-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .hero-list li {
+            background: rgba(15,23,42,0.25);
+            border-radius: 999px;
+            padding: 6px 14px;
+            font-size: 0.9rem;
+        }
+        .hero-metrics {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+        .metric-card {
+            background: rgba(255,255,255,0.15);
+            border-radius: 18px;
+            padding: 16px;
+            border: 1px solid rgba(255,255,255,0.25);
+            backdrop-filter: blur(6px);
+        }
+        .metric-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+        .metric-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            display: block;
+            margin: 6px 0 2px;
+        }
+        .metric-desc {
+            font-size: 0.85rem;
+            opacity: 0.85;
+        }
+        .info-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 18px 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 18px 35px rgba(15,23,42,0.08);
+        }
+        .step-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 28px 20px 20px;
+            border: 1px solid #e2e8f0;
+            min-height: 150px;
+            position: relative;
+            overflow: visible;
+        }
+        .step-card::before {
+            content: attr(data-step);
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: #fff;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+        }
+        .step-card h4 {
+            margin-bottom: 0.4rem;
+        }
+        .status-chip {
+            display: inline-flex;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: #eef2ff;
+            color: #3730a3;
+            margin-bottom: 0.6rem;
+        }
+        .step-card.completed {
+            border-color: #22c55e;
+            box-shadow: 0 18px 40px rgba(34,197,94,0.18);
+        }
+        .step-card.completed .status-chip {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .step-card.active {
+            border-color: var(--brand);
+            box-shadow: 0 18px 40px rgba(37,99,235,0.2);
+        }
+        .step-card.active .status-chip {
+            background: var(--brand-soft);
+            color: var(--brand);
+        }
+        .step-card.pending {
+            opacity: 0.75;
+        }
+        .highlight-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 18px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 25px rgba(15,23,42,0.08);
+            min-height: 150px;
+        }
+        .highlight-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: #eef2ff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            color: #4338ca;
+        }
+        .highlight-card h4 {
+            margin: 0 0 6px;
+        }
+        .highlight-card p {
+            margin: 0;
+            color: #475569;
+            font-size: 0.92rem;
+            line-height: 1.4;
+        }
+        .section-title {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin-top: 2rem;
+            margin-bottom: 0.6rem;
+        }
+        .section-title h3 {
+            margin: 0;
+        }
+        .section-title span {
+            color: #64748b;
+        }
+        .stTabs [role="tablist"] button {
+            border-radius: 12px 12px 0 0;
+            padding: 10px 18px;
+            margin-right: 6px;
+            background: transparent;
+            border: none;
+        }
+        .stTabs [role="tab"][aria-selected="true"] {
+            background: #fff;
+            color: var(--brand);
+            font-weight: 600;
+            border: 1px solid #e2e8f0;
+            border-bottom-color: transparent;
+        }
+        .stTabs [role="tab"][aria-selected="false"] {
+            background: transparent;
+            color: #94a3b8;
+        }
+        .stTabs [role="tabpanel"] {
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+        }
+        div[data-testid="stChatMessage"] {
+            border-radius: 18px;
+            padding: 16px;
+            margin-bottom: 14px;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+        }
+        div[data-testid="stChatMessage"][data-testid*="assistant"] {
+            background: #f8fafc;
+        }
+        div[data-testid="stChatMessage"] pre {
+            border-radius: 14px;
+            background: #0f172a;
+            color: #f8fafc;
+        }
+        .stAlert {
+            border-radius: 14px;
+        }
+        [data-testid="stSidebar"] ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+        }
+        @media (max-width: 1200px) {
+            .hero-card {
+                flex-direction: column;
+            }
+            .hero-metrics {
+                grid-template-columns: repeat(2, minmax(150px, 1fr));
+            }
+        }
+        @media (max-width: 768px) {
+            .hero-metrics {
+                grid-template-columns: repeat(1, minmax(160px, 1fr));
+            }
+            .step-card {
+                margin-bottom: 12px;
+            }
+            .stTabs [role="tabpanel"] {
+                padding: 18px;
+            }
+        }
+        [data-testid="stSidebar"] {
+            background: linear-gradient(180deg,#0f172a,#1d2144);
+            color: #e2e8f0;
+        }
+        [data-testid="stSidebar"] h2,[data-testid="stSidebar"] h3,[data-testid="stSidebar"] label {
+            color: #e2e8f0;
+        }
+        [data-testid="stSidebar"] .stCheckbox > label span, [data-testid="stSidebar"] .stSlider label {
+            color: #e2e8f0;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_overview_panel():
+    """渲染顶部总览卡片"""
+    session_path = st.session_state.get("session_db_path")
+    if session_path is None:
+        knowledge_source = "未加载"
+        knowledge_desc = "请先上传或加载默认教材"
+    elif session_path == STATIC_VECTOR_DB_PATH:
+        knowledge_source = "默认教材"
+        knowledge_desc = "使用预置教材知识库"
+    else:
+        knowledge_source = "自定义PDF"
+        knowledge_desc = "您上传的教材已构建双库"
+    
+    quiz_ready = "已就绪" if st.session_state.get("quiz_retriever") else "待上传"
+    quiz_desc = "可直接生成题目" if quiz_ready == "已就绪" else "上传教材后启用"
+    
+    rag_turns = len(st.session_state.get("rag_messages", []))
+    
+    try:
+        feedback_count = len(
+            [f for f in os.listdir(FEEDBACK_DB_PATH) if f.endswith(".json")]
+        )
+    except FileNotFoundError:
+        feedback_count = 0
+    
+    hero_html = f"""
+    <div class="hero-card">
+        <div style="flex:1 1 260px;">
+            <span class="hero-badge">MLTutor · 智能学习工作台</span>
+            <h2>上传教材 · 构建知识库 · 即刻开启个性化学习</h2>
+            <p>双知识库+混合检索驱动的自学体验，集成测验、错题报告与 AI 助教。</p>
+            <ul class="hero-list">
+                <li>分块清洗</li>
+                <li>混合检索</li>
+                <li>多轮答疑</li>
+                <li>学习反馈</li>
+            </ul>
+        </div>
+        <div class="hero-metrics">
+            <div class="metric-card">
+                <span class="metric-label">知识库</span>
+                <span class="metric-value">{knowledge_source}</span>
+                <span class="metric-desc">{knowledge_desc}</span>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">测验状态</span>
+                <span class="metric-value">{quiz_ready}</span>
+                <span class="metric-desc">{quiz_desc}</span>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">AI 助教对话</span>
+                <span class="metric-value">{rag_turns}</span>
+                <span class="metric-desc">历史问答轮次</span>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">反馈记录</span>
+                <span class="metric-value">{feedback_count}</span>
+                <span class="metric-desc">帮助模型持续改进</span>
+            </div>
+        </div>
+    </div>
+    """
+    st.markdown(hero_html, unsafe_allow_html=True)
+
+
+def render_highlights():
+    """展示关键动作提示卡片"""
+    highlights = [
+        {"icon": "📤", "title": "上传教材", "desc": "支持拖拽/批量 PDF，自动识别目录与公式。"},
+        {"icon": "🎯", "title": "智能测验", "desc": "多题型组合 + 质量校验，准确定位理解薄弱点。"},
+        {"icon": "🤝", "title": "AI 助教", "desc": "混合检索 + Few-shot，多轮追问直达概念核心。"},
+    ]
+    st.markdown('<div class="section-title"><h3>核心功能</h3><span>一站式学习流程</span></div>', unsafe_allow_html=True)
+    cols = st.columns(len(highlights))
+    for col, item in zip(cols, highlights):
+        col.markdown(
+            f"""
+            <div class="highlight-card">
+                <div class="highlight-icon">{item['icon']}</div>
+                <h4>{item['title']}</h4>
+                <p>{item['desc']}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
+def render_upload_steps(stage: str):
+    """展示上传流程步骤卡片"""
+    steps = [
+        {"title": "上传教材", "desc": "支持拖拽或选择 PDF，系统自动识别章节结构。", "step": "STEP 01"},
+        {"title": "构建知识库", "desc": "后台分块、Embedding 与混合检索器生成。", "step": "STEP 02"},
+        {"title": "测验 & 助教", "desc": "开启个性化测验与多轮 AI 答疑。", "step": "STEP 03"},
+    ]
+    states_map = {
+        "idle": ["active", "pending", "pending"],
+        "uploaded": ["completed", "active", "pending"],
+        "processing": ["completed", "active", "pending"],
+        "ready": ["completed", "completed", "active"],
+    }
+    labels_map = {
+        "completed": "已完成",
+        "active": "进行中",
+        "pending": "待开始",
+    }
+    state_sequence = states_map.get(stage, states_map["idle"])
+    cols = st.columns(3)
+    for col, step, state in zip(cols, steps, state_sequence):
+        col.markdown(
+            f"""
+            <div class="step-card {state}" data-step="{step['step']}">
+                <span class="status-chip">{labels_map[state]}</span>
+                <h4>{step['title']}</h4>
+                <p>{step['desc']}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
 # ==================== 辅助函数 ====================
 
 def _display_question_result(result: Dict[str, Any], expanded: bool = False):
@@ -604,6 +992,7 @@ def main():
         layout="wide",
         initial_sidebar_state="expanded"
     )
+    inject_custom_css()
     
     st.title("📘 个性化学习测验系统")
     st.caption("上传教材 → 智能出题 → 自动评分 → AI答疑")
@@ -658,6 +1047,9 @@ def main():
     (enable_query_expansion, k_documents, 
      enable_multi_turn, max_history_turns, use_fewshot) = render_sidebar()
     
+    render_overview_panel()
+    render_highlights()
+    
     # --- 创建标签页 ---
     tab_upload, tab_quiz, tab_report, tab_rag = st.tabs([
         "📚 上传教材",
@@ -671,6 +1063,7 @@ def main():
         st.header("📚 上传学习教材")
         st.info("💡 **双知识库架构**：上传PDF后将创建两个知识库 - 一个专门用于出题（仅PDF），另一个用于AI问答（默认教材+PDF混合）")
         
+        steps_placeholder = st.empty()
         col1, col2 = st.columns([2, 1])
         
         with col1:
@@ -786,6 +1179,7 @@ def main():
                             
                             # 清理任务状态
                             del st.session_state.processing_task_id
+                            st.rerun()
                         
                     elif task.status == TaskStatus.FAILED:
                         st.error(f"❌ 处理失败: {task.error}")
@@ -823,8 +1217,21 @@ def main():
                         
                         st.success("✅ 默认教材加载成功")
                         st.info("👉 可以开始使用测验或问答功能")
+                        st.rerun()
                     else:
                         st.error("❌ 加载失败")
+        
+        stage = "idle"
+        if st.session_state.get("quiz_retriever"):
+            stage = "ready"
+        elif 'processing_task_id' in st.session_state:
+            stage = "processing"
+        elif uploaded_file is not None:
+            stage = "uploaded"
+        
+        with steps_placeholder:
+            st.markdown("### 🧭 使用流程")
+            render_upload_steps(stage)
     
     # ==================== 标签页2：开始测验 ====================
     with tab_quiz:
